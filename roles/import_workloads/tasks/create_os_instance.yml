@@ -6,7 +6,7 @@
 
 - name: Set guest boot volume image metadata
   ansible.builtin.shell: |
-    openstack volume set {{ volumes[0] }} {{ image_properties }}
+    openstack volume set {{ volume_uuid[0] }} {{ image_properties }}
   when: hw_machine_type is defined
   changed_when: false
   environment:
@@ -19,13 +19,6 @@
   register: volume_result
   when: import_workloads_os_migrate_virt_v2v
 
-- name: Get volume information for Cinder boot
-  os_migrate.vmware_migration_kit.volume_info:
-    cloud: "{{ dst_cloud }}"
-    name: "{{ vm_name }}"
-  register: cinder_volume_result
-  when: import_workloads_boot_from_cinder
-
 - name: Set boot volume UUID as a fact for virt-v2v
   ansible.builtin.set_fact:
     boot_volume_uuid: "{{ volume_result.volumes[0].id }}"
@@ -35,11 +28,6 @@
   ansible.builtin.set_fact:
     boot_volume_uuid: "{{ volume_uuid[0] }}"
   when: import_workloads_os_migrate_nbdkit
-
-- name: Set boot volume UUID as a fact for Cinder boot
-  ansible.builtin.set_fact:
-    boot_volume_uuid: "{{ cinder_volume_result.volumes[0].id }}"
-  when: import_workloads_boot_from_cinder
 
 - name: Set additional volumes list for nbdkit
   ansible.builtin.set_fact:
